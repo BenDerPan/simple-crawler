@@ -30,6 +30,17 @@ router.route('/').get( function (req, res, next) {
                     "url": baseUrl + $(element).find('p.bttn-share-view-all').find('a').attr('href')
                 });
             });
+            /**
+             * 批量添加到mongo 以数组的形式
+             */
+             Content.collection.insert(items,function (err,docs) {
+             if(err){
+                console.error(err);
+             }else{
+                console.info("successfully insert",items.length);
+             }
+
+             })
             res.send(items);
            // res.redirect(307, 'api/content');
         });
@@ -38,7 +49,7 @@ router.route('/').get( function (req, res, next) {
 
 /**
  * gaorui 2016.5.16
- * 循环讲数据存入到mongo中
+ * 循环讲数据存入到mongo中,重复的数据不能插入
  */
 router.route("/testPost")
     .get(function (req,res,next) {
@@ -54,12 +65,18 @@ router.route("/testPost")
 
                 //遍历所有的div快对其进行过滤得到标题和链接
                 [].forEach.call($('.share-box'), function (element, index) {
-                    items.push({
+
+                    var object = {
                         "title": $(element).find('h1')[0].children[0].data,
                         "url": baseUrl + $(element).find('p.bttn-share-view-all').find('a').attr('href')
-                    });
+                    };
+                    //处理重复数据
+                    Content.findOneAndUpdate(object,object,{ upsert:true },function (err,doc) {
+                        if (err) return res.send(500, { error: err });
+                            //return console.log("succesfully saved");
+                     });
                     /**
-                     * 循环添加到mongo，先注释掉
+                     * 循环添加到mongo，先注释掉，不考虑重复
                      */
                     /*
                     var content = new Content({
@@ -74,18 +91,7 @@ router.route("/testPost")
                         //res.send({message: 'connect Added'});
                     });*/
                 });
-                /**
-                 * 批量添加到mongo 以数组的形式
-                 */
-                Content.collection.insert(items,function (err,docs) {
-                    if(err){
-                        console.error(err);
-                    }else{
-                        console.info("successfully insert",items.length);
-                    }
-
-                })
-                res.send(items);
+                res.send("succesfully saved");
             });
 
     })
