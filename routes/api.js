@@ -58,7 +58,10 @@ router.route("/testPost")
                         "title": $(element).find('h1')[0].children[0].data,
                         "url": baseUrl + $(element).find('p.bttn-share-view-all').find('a').attr('href')
                     });
-
+                    /**
+                     * 循环添加到mongo，先注释掉
+                     */
+                    /*
                     var content = new Content({
                         "title": $(element).find('h1')[0].children[0].data,
                         "url": baseUrl + $(element).find('p.bttn-share-view-all').find('a').attr('href')
@@ -69,8 +72,19 @@ router.route("/testPost")
                             return res.send(err);
                         }
                         //res.send({message: 'connect Added'});
-                    });
+                    });*/
                 });
+                /**
+                 * 批量添加到mongo 以数组的形式
+                 */
+                Content.collection.insert(items,function (err,docs) {
+                    if(err){
+                        console.error(err);
+                    }else{
+                        console.info("successfully insert",items.length);
+                    }
+
+                })
                 res.send(items);
             });
 
